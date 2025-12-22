@@ -50,6 +50,9 @@ public class GameWebSocketController {
         );
     }
 
-
+    @MessageMapping("/room/{roomId}/start")
+    public void startGame(@DestinationVariable String roomId){
+        gameService.startRound(roomId);
+    }
 
 }

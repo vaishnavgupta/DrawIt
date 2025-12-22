@@ -49,8 +49,8 @@ public class RoomStateService {
                 .set(generateKey(roomId, "word"), word);
     }
 
-    public void getWord(String roomId){
-        redisTemplate.opsForValue()
+    public String getWord(String roomId){
+        return (String) redisTemplate.opsForValue()
                 .get(generateKey(roomId, "word"));
     }
 
@@ -85,6 +85,13 @@ public class RoomStateService {
         Long added = redisTemplate.opsForSet()
                 .add(generateKey(roomId, "guessed"), username);
         return added != null && added == 1;
+    }
+
+    public void resetRound(String roomId){
+        redisTemplate.delete(List.of(
+                generateKey(roomId, "word"),
+                generateKey(roomId, "guessed")
+        ));
     }
 
     public void clearRoom(String roomId) {
