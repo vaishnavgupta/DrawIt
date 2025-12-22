@@ -43,7 +43,7 @@ public class RoundTimerService {
         }
     }
 
-    private void endRound(String roomId){
+    public void endRound(String roomId){
         stopTimer(roomId);
 
         String word = redisService.getWord(roomId);

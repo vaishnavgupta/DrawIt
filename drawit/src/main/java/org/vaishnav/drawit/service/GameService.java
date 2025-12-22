@@ -3,6 +3,7 @@ package org.vaishnav.drawit.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.vaishnav.drawit.dto.GuessResultDto;
 import org.vaishnav.drawit.redis.RoomStateService;
 
 @Service
@@ -14,13 +15,70 @@ public class GameService {
     private final WordsService wordsService;
     private final RoomStateService redisService;
     private final RoundTimerService roundTimerService;
+    private final ScoreService scoreService;
 
     public boolean isDrawer(String roomId, String name) {
         return true;
     }
 
-    public String processGuess(String roomId, String message, String name) {
-        return "success";
+    public void processGuess(String roomId, String username, String guess) {
+
+        if(!redisService.isRoundActive(roomId)){
+            return;
+        }
+
+        //Drawer cannot guess
+        String drawer = redisService.getDrawer(roomId);
+        if(username.equals(drawer)){
+            return;
+        }
+
+        boolean firstTime = redisService.markGuessed(roomId, username);
+        if(!firstTime){         //Not first time
+            return;
+        }
+
+        //Comparing the word with stored one
+        String correctedWord = redisService.getWord(roomId);
+        boolean isCorrect = correctedWord.equalsIgnoreCase(guess.trim());
+
+        if(!isCorrect){
+            broadcastWrongGuess(roomId, username, guess);
+            return;
+        }
+
+        handleCorrectGuess(roomId, username);
+    }
+
+    private void handleCorrectGuess(String roomId, String username) {
+        roundTimerService.stopTimer(roomId);
+
+        int timeLeft = redisService.getTimer(roomId);
+
+        //Score Calculation
+        int guesserScore = scoreService.calculateGuessScore(timeLeft, true);
+        int drawerScore = scoreService.calculateDrawerScore();
+
+        redisService.addScore(roomId, username, guesserScore);
+        redisService.addScore(roomId, redisService.getDrawer(roomId), drawerScore);
+
+        template.convertAndSend(
+                "/topic/room/" + roomId + "/guess",
+                new GuessResultDto(username, "guessed correctly!", true)
+        );
+
+        roundTimerService.endRound(roomId);
+    }
+
+    private void broadcastWrongGuess(
+            String roomId,
+            String username,
+            String guess
+    ){
+        template.convertAndSend(
+                "/topic/room/" + roomId + "/guess",
+                new GuessResultDto(username, guess, false)
+        );
     }
 
     public void startRound(String roomId) {

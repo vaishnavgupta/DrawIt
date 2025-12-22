@@ -108,4 +108,9 @@ public class RoomStateService {
     public void setRoomTTL(String roomId, long minutes) {
         redisTemplate.expire("room:" + roomId, minutes, TimeUnit.MINUTES);
     }
+
+    //Helper Methods
+    public boolean isRoundActive(String roomId){
+        return redisTemplate.hasKey(generateKey(roomId, "word"));
+    }
 }
