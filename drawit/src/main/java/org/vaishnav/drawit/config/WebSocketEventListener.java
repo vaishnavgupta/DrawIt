@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.vaishnav.drawit.redis.RoomStateService;
@@ -18,14 +19,20 @@ public class WebSocketEventListener {
     private final GameService gameService;
 
     @EventListener
-    public void handleConnect(SessionConnectedEvent event){
+    public void handleConnect(SessionConnectEvent event){
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
         String sessionId = accessor.getSessionId();
         String username = accessor.getFirstNativeHeader("username");
-        String roomId = accessor.getFirstNativeHeader("roomId");
+        String roomId   = accessor.getFirstNativeHeader("roomId");
+
+        System.out.println("NATIVE HEADERS → " + accessor.toNativeHeaderMap());
+
+
+        System.out.println("CONNECT EVENT → user=" + username + ", room=" + roomId + " session=" + sessionId);
 
         if(username == null || roomId == null){
+            System.out.println("CONNECT ignored (missing data)");
             return;
         }
 
