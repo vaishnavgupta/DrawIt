@@ -7,4 +7,15 @@ spring:
       host: localhost
       port: 6379
 
+  datasource:
+    url: jdbc:postgresql://localhost:5432/drawit
+    username: postgres
+    password: VGpostgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+
 

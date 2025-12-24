@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -76,9 +77,17 @@ public class RoomStateService {
                 .increment(generateKey(roomId, "scores"), username, score);
     }
     
-    public Map<Object, Object> getScores(String roomId){
-        return redisTemplate.opsForHash()
+    public Map<String, Integer> getFinalScores(String roomId){
+        Map<Object, Object> mp = redisTemplate.opsForHash()
                 .entries(generateKey(roomId, "scores"));
+
+        Map<String, Integer> scores = new HashMap<>();
+
+        mp.forEach((k, v) -> {
+            scores.put((String) k, ((Long) v).intValue());
+        });
+
+        return scores;
     }
 
     public boolean markGuessed(String roomId, String username){
