@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/drawit/drawit.iml" filepath="$PROJECT_DIR$/drawit/drawit.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/drawit-complete.iml" filepath="$PROJECT_DIR$/.idea/drawit-complete.iml" />
     </modules>
   </component>
